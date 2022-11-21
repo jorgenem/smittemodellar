@@ -50,12 +50,17 @@ class ABM:
         df_pop = self.df_pop # Rename for convenience inside this function, should be just a view into the self.df_pop object which will be modified
         timearray = np.linspace(0, Tmax, int(Tmax/self.dt)) # Make time array
 
-        prevalence = np.zeros(len(timearray))
+        # Initialise counters
         incidence = np.zeros(len(timearray))
+        prevalence_infected = np.zeros(len(timearray))
+        prevalence_susceptible = np.zeros(len(timearray))
+        prevalence_recovered = np.zeros(len(timearray))
 
         # Timestep 0 is assumed to be when seed cases happen:
-        prevalence[0] = np.sum((df_pop['status'] == "I"))
         incidence[0] = np.sum(((df_pop['status'] == "I") & (df_pop['timestep_infected'] == 0)))
+        prevalence_infected[0] = np.sum((df_pop['status'] == "I"))
+        prevalence_susceptible[0] = np.sum((df_pop['status'] == "S"))
+        prevalence_recovered[0] = np.sum((df_pop['status'] == "R"))
 
         # Then loop from timestep 1 onward:
         for it, t in zip(range(1, len(timearray)), timearray[1:]): # it is integer time index, t is clock time, such that t = it*dt. 
@@ -78,12 +83,14 @@ class ABM:
             df_pop.loc[recovered, 'status'] = "R"
 
             # Update counters at this timestep
-            prevalence[it] = np.sum((df_pop['status'] == "I"))
             incidence[it] = np.sum(((df_pop['status'] == "I") & (df_pop['timestep_infected'] == it)))
+            prevalence_infected[it] = np.sum((df_pop['status'] == "I"))
+            prevalence_susceptible[it] = np.sum((df_pop['status'] == "S"))
+            prevalence_recovered[it] = np.sum((df_pop['status'] == "R"))
                 
 
 
-        return timearray, prevalence, incidence
+        return timearray, incidence, prevalence_infected, prevalence_susceptible, prevalence_recovered
 
 
 
@@ -92,8 +99,8 @@ if __name__ == "__main__":
 
     # Instantiate model:
     abm = ABM(
-        N_pop=100,
-        gamma_numcontacts_k=10,
+        N_pop=500,
+        gamma_numcontacts_k=8,
         gamma_numcontacts_scale=0.2,
         gamma_recoverytime_k=3,
         gamma_recoverytime_scale=1,
@@ -103,17 +110,20 @@ if __name__ == "__main__":
     # Generate population of susceptibles and seed initial infections:
     abm.reset_run() 
     # Run infectious disease model forward in time:
-    timearray, prevalence, incidence = abm.run_abm(
-        beta = 1,
-        Tmax = 10
+    timearray, incidence, prevalence_infected, prevalence_susceptible, prevalence_recovered = abm.run_abm(
+        beta = 0.25,
+        Tmax = 100
         )
 
     # Plot results
     f, ax = plt.subplots(2)
     ax[0].plot(timearray, incidence, label='incidence')
-    ax[0].set_title('incidence')
-    ax[1].plot(timearray, prevalence, label='prevalence')
-    ax[1].set_title('prevalence')
+    ax[0].set_title('incidence of infections')
+    ax[1].plot(timearray, prevalence_infected, label='I')
+    ax[1].plot(timearray, prevalence_susceptible, label='S')
+    ax[1].plot(timearray, prevalence_recovered, label='R')
+    ax[1].set_title('prevalence in compartments')
+    ax[1].legend()
     plt.tight_layout()
     
     plt.show()
