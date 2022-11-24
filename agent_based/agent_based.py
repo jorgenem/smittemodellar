@@ -5,6 +5,7 @@ import pandas as pd
 
 """
 A simple agent-based SIR model
+By Jørgen Eriksson Midtbø, Folkehelseinstituttet, github.com/jorgenem
 """
 
 
@@ -63,6 +64,7 @@ class ABM:
         prevalence_recovered[0] = np.sum((df_pop['status'] == "R"))
 
         # Then loop from timestep 1 onward:
+        # TODO can this get speedup using numba?
         for it, t in zip(range(1, len(timearray)), timearray[1:]): # it is integer time index, t is clock time, such that t = it*dt. 
             infected = df_pop[df_pop['status'] == "I"]['id']
             susceptible = df_pop[df_pop['status'] == "S"]['id']
