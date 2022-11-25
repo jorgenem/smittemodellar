@@ -89,6 +89,8 @@ class ABM:
             prevalence_infected[it] = np.sum((df_pop['status'] == "I"))
             prevalence_susceptible[it] = np.sum((df_pop['status'] == "S"))
             prevalence_recovered[it] = np.sum((df_pop['status'] == "R"))
+
+            # TODO calculate and store reproduction number?
                 
 
 
@@ -128,4 +130,6 @@ if __name__ == "__main__":
     ax[1].legend()
     plt.tight_layout()
     
+   
+
     plt.show()

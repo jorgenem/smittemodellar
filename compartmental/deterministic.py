@@ -79,4 +79,12 @@ if __name__ == "__main__":
     ax[0].legend()
 
     plt.show()
+
+
+    # Plot "phase diagrams"
+    f, ax = plt.subplots(3)
+    ax[0].plot(S, I, label="SI")
+    ax[1].plot(I, R, label="IR")
+    ax[2].plot(R, S, label="RS")
+    plt.show()
     
