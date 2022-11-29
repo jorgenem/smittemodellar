@@ -12,10 +12,10 @@ from stochastic import *
 # Set parameters and initial conditions
 T = 30
 dt = 0.1
-beta = 1.4
+beta = 1.8
 gamma = 0.8
-N = 100
-I0 = 5
+N = 1000
+I0 = 50
 R0 = 0
 
 # Instantiate model

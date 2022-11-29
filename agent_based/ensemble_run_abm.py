@@ -6,7 +6,7 @@ import plotnine as pln
 from agent_based import *
 
 
-N_runs = 10
+N_runs = 20
 dt_results = {}
 for i in range(N_runs):
     # Instantiate model:
