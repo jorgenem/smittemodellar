@@ -1,5 +1,7 @@
 # Simple infectious disease models written in python
 
+Each model can be run by `python <script_name.py>`. The stochastic models can also be run in ensemble through a wrapper.
+
 ## Agent-based model
 Found under folder `agent_based/`. The simplest possible implementation of an agent-based SIR model, assuming only random mixing between individuals. The population is stored as a Pandas dataframe and can easily be expanded with further characteristics. Very slow to run.
 
