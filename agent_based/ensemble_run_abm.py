@@ -11,19 +11,19 @@ def wrapper_call(i):
     # Instantiate model:
     abm = ABM(
         N_pop=1000,
-        gamma_numcontacts_k=4,
-        gamma_numcontacts_scale=2,
-        gamma_recoverytime_k=2,
-        gamma_recoverytime_scale=1,
+        gamma_numcontacts_k=2,
+        gamma_numcontacts_scale=4,
+        gamma_recoverytime_k=1,
+        gamma_recoverytime_scale=2,
         N_initial_infected=1,
-        dt=0.1
+        dt=1.0
     )
     # Generate population of susceptibles and seed initial infections:
     abm.reset_run() 
     # Run infectious disease model forward in time:
     t, incidence, I, S, R  = abm.run_abm(
-        beta = 0.2,
-        Tmax = 10
+        beta = 0.4,
+        Tmax = 100
         )
     dt_results = {
         't': t,
@@ -72,8 +72,8 @@ results_long['grouping'] = results_long['compartment'].astype(str) + "_" + resul
 from plotnine import *
 fig, plot = (ggplot(results_long)
 + aes(x='t', y='count', colour='compartment', group='grouping')
-+ geom_line(alpha=0.7)
++ geom_line(alpha=0.3)
 ).draw(show=True, return_ggplot=True)
-ggsave(plot = plot, filename = "abm_ensemble.png", width=10, height=8, dpi=1000)
+ggsave(plot = plot, filename = "abm_ensemble.png")
 # fig.tight_layout()
 # fig.savefig('abm_ensemble.png', dpi=300)

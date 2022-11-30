@@ -76,11 +76,8 @@ class ABM:
                 # Decide how many of these contact encounters resulted in possible transmission
                 prob_infectious_contact = 1 - np.exp(-beta*self.dt)
                 N_contacts_infected = self.rng.binomial( N_contacts, prob_infectious_contact)
-                # N_contacts_infected = min(len(susceptible), N_contacts_infected)  # TODO this is a design flaw, draws should take into account diminishing probability to encounter susceptible individuals
                 infectees = self.rng.choice(df_pop['id'], size = N_contacts_infected, replace = False)
-                # print("presel:", infectees)
-                infectees = infectees[df_pop['status'][infectees] == "S"] # Filter out only S individuals among infectees to actually get infected (again)
-                # print("postsel:", infectees)
+                infectees = infectees[df_pop['status'][infectees] == "S"] # Filter out only S individuals among infectees to actually get infected
                 df_pop.loc[infectees, 'status'] = "I"
                 df_pop.loc[infectees, 'timestep_infected'] = it
                 df_pop.loc[infectees, 'timestep_recovered'] = it + (self.rng.gamma(self.gamma_recoverytime_k, self.gamma_recoverytime_scale, size=len(infectees))/self.dt).astype(int) # Deciding recovery time in the future for each individual
