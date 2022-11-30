@@ -8,15 +8,15 @@ from stochastic import *
 # Run many realisations of the stochastic compartmental model
 
 
-
 # Set parameters and initial conditions
-T = 30
+T = 20
 dt = 0.1
-beta = 1.8
-gamma = 0.8
+beta = 1.5
+gamma = 1.4
 N = 1000
-I0 = 50
+I0 = 10
 R0 = 0
+random_seed = 42
 
 # Instantiate model
 sir = SIR(T=T, dt=dt, beta=beta, gamma=gamma, N=N, I0=I0, R0=R0)

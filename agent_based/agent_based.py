@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+import time
 
 
 """
@@ -64,21 +65,25 @@ class ABM:
         prevalence_recovered[0] = np.sum((df_pop['status'] == "R"))
 
         # Then loop from timestep 1 onward:
-        # TODO can this get speedup using numba?
+        # TODO can this get speedup using numba? Would require some rewriting of Pandas dfs to Numpy arrays.
         for it, t in zip(range(1, len(timearray)), timearray[1:]): # it is integer time index, t is clock time, such that t = it*dt. 
             infected = df_pop[df_pop['status'] == "I"]['id']
             susceptible = df_pop[df_pop['status'] == "S"]['id']
             for i in infected: # TODO test parallelising this loop, not caring about double infections of same infectee in multiple chains
-                # Find some others to infect
+                # Draw number of total contact encounters for individual
                 N_contacts = int(self.rng.gamma(self.gamma_numcontacts_k, self.gamma_numcontacts_scale, size=1))
                 # print("infector i = ", i, ", N_contacts =", N_contacts)
+                # Decide how many of these contact encounters resulted in possible transmission
                 prob_infectious_contact = 1 - np.exp(-beta*self.dt)
                 N_contacts_infected = self.rng.binomial( N_contacts, prob_infectious_contact)
-                N_contacts_infected = min(len(susceptible), N_contacts_infected)
-                infectees = self.rng.choice(susceptible, size = N_contacts_infected, replace = False)
+                # N_contacts_infected = min(len(susceptible), N_contacts_infected)  # TODO this is a design flaw, draws should take into account diminishing probability to encounter susceptible individuals
+                infectees = self.rng.choice(df_pop['id'], size = N_contacts_infected, replace = False)
+                # print("presel:", infectees)
+                infectees = infectees[df_pop['status'][infectees] == "S"] # Filter out only S individuals among infectees to actually get infected (again)
+                # print("postsel:", infectees)
                 df_pop.loc[infectees, 'status'] = "I"
                 df_pop.loc[infectees, 'timestep_infected'] = it
-                df_pop.loc[infectees, 'timestep_recovered'] = it + (self.rng.gamma(self.gamma_recoverytime_k, self.gamma_recoverytime_scale, size=N_contacts_infected)/self.dt).astype(int) # Deciding recovery time in the future for each individual
+                df_pop.loc[infectees, 'timestep_recovered'] = it + (self.rng.gamma(self.gamma_recoverytime_k, self.gamma_recoverytime_scale, size=len(infectees))/self.dt).astype(int) # Deciding recovery time in the future for each individual
 
             # Who recovers at this timestep?
             recovered = df_pop[df_pop['timestep_recovered'] == it]['id']
@@ -103,10 +108,10 @@ if __name__ == "__main__":
 
     # Instantiate model:
     abm = ABM(
-        N_pop=500,
-        gamma_numcontacts_k=8,
-        gamma_numcontacts_scale=0.2,
-        gamma_recoverytime_k=3,
+        N_pop=1000,
+        gamma_numcontacts_k=4,
+        gamma_numcontacts_scale=2,
+        gamma_recoverytime_k=2,
         gamma_recoverytime_scale=1,
         N_initial_infected=1,
         dt=0.1
@@ -114,22 +119,35 @@ if __name__ == "__main__":
     # Generate population of susceptibles and seed initial infections:
     abm.reset_run() 
     # Run infectious disease model forward in time:
-    timearray, incidence, prevalence_infected, prevalence_susceptible, prevalence_recovered = abm.run_abm(
-        beta = 0.25,
-        Tmax = 100
+    tstart = time.perf_counter()
+    t, incidence, I, S, R = abm.run_abm(
+        beta = 0.4,
+        Tmax = 20
         )
+    tend = time.perf_counter()
+    print("Ran agent-based model in {:.3f} seconds.".format(tend-tstart))
 
     # Plot results
     f, ax = plt.subplots(2)
-    ax[0].plot(timearray, incidence, label='incidence')
+    ax[0].plot(t, incidence, label='incidence')
     ax[0].set_title('incidence of infections')
-    ax[1].plot(timearray, prevalence_infected, label='I')
-    ax[1].plot(timearray, prevalence_susceptible, label='S')
-    ax[1].plot(timearray, prevalence_recovered, label='R')
+    ax[1].plot(t, I, label='I')
+    ax[1].plot(t, S, label='S')
+    ax[1].plot(t, R, label='R')
     ax[1].set_title('prevalence in compartments')
     ax[1].legend()
     plt.tight_layout()
-    
-   
-
     plt.show()
+
+    
+    # Plot using plotnine (ggplot2)
+    dfp = pd.concat([
+        pd.DataFrame({"t": t, "count": S, "compartment": "S"}),
+        pd.DataFrame({"t": t, "count": I, "compartment": "I"}),
+        pd.DataFrame({"t": t, "count": R, "compartment": "R"})
+    ])
+    from plotnine import *
+    (ggplot(dfp)
+    + aes(x='t', y='count', colour='compartment')
+    + geom_line()
+    )

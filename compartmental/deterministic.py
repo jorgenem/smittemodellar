@@ -53,12 +53,12 @@ class SIR:
 if __name__ == "__main__":
 
     # Set parameters and initial conditions
-    T = 80
+    T = 20
     dt = 0.1
-    beta = 1.4
-    gamma = 0.8
-    N = 100
-    I0 = 1
+    beta = 1.5
+    gamma = 0.4
+    N = 1000
+    I0 = 10
     R0 = 0
 
     # Run model
@@ -67,16 +67,19 @@ if __name__ == "__main__":
 
     ## Plot results
     # Plot prevalence curves
-    f, ax = plt.subplots(2)
-    ax[1].plot(t, S, label="S")
-    ax[1].plot(t, I, label="I")
-    ax[1].plot(t, R, label="R")
-    ax[1].legend()
+    f, ax = plt.subplots(1)
+    ax.plot(t, S, label="S")
+    ax.plot(t, I, label="I")
+    ax.plot(t, R, label="R")
+    ax.set_ylabel("Prevalence")
+    ax.set_xlabel("Time")
+    ax.legend()
 
     # Plot incidence of infections (has to be calculated explicitly from the first term in dI/dt since compartmental value is prevalence)
     inc = beta * S * I / N
-    ax[0].plot(t, inc, label="incidence I")
-    ax[0].legend()
+    f, ax = plt.subplots(1)
+    ax.plot(t, inc, label="incidence I")
+    ax.legend()
 
     plt.show()
 
@@ -88,3 +91,16 @@ if __name__ == "__main__":
     ax[2].plot(R, S, label="RS")
     plt.show()
     
+
+
+    # Plot using plotnine (ggplot2)
+    dfp = pd.concat([
+        pd.DataFrame({"t": t, "count": S, "compartment": "S"}),
+        pd.DataFrame({"t": t, "count": I, "compartment": "I"}),
+        pd.DataFrame({"t": t, "count": R, "compartment": "R"})
+    ])
+    from plotnine import *
+    (ggplot(dfp)
+    + aes(x='t', y='count', colour='compartment')
+    + geom_line()
+    )

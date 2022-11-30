@@ -72,17 +72,19 @@ class SIR:
 if __name__ == "__main__":
 
     # Set parameters and initial conditions
-    T = 80
+    T = 20
     dt = 0.1
-    beta = 1.4
-    gamma = 0.8
-    N = 100
-    I0 = 1
+    beta = 1.5
+    gamma = 0.4
+    N = 1000
+    I0 = 10
     R0 = 0
-
+    random_seed = 42
     # Run model
-    sir = SIR(T=T, dt=dt, beta=beta, gamma=gamma, N=N, I0=I0, R0=R0)
+    sir = SIR(T=T, dt=dt, beta=beta, gamma=gamma, N=N, I0=I0, R0=R0, random_seed=random_seed)
     t, S, I, R, = sir.run_model()
+
+
 
 
     ## Plot results
@@ -94,3 +96,16 @@ if __name__ == "__main__":
     ax.legend()
 
     plt.show()
+
+
+    # Plot using plotnine (ggplot2)
+    dfp = pd.concat([
+        pd.DataFrame({"t": t, "count": S, "compartment": "S"}),
+        pd.DataFrame({"t": t, "count": I, "compartment": "I"}),
+        pd.DataFrame({"t": t, "count": R, "compartment": "R"})
+    ])
+    from plotnine import *
+    (ggplot(dfp)
+    + aes(x='t', y='count', colour='compartment')
+    + geom_line()
+    )
