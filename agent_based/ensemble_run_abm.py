@@ -22,7 +22,7 @@ def wrapper_call(i):
     abm.reset_run() 
     # Run infectious disease model forward in time:
     t, incidence, I, S, R  = abm.run_abm(
-        beta = 0.4,
+        beta = 0.2,
         Tmax = 10
         )
     dt_results = {
@@ -36,14 +36,14 @@ def wrapper_call(i):
     return dt_results
 
 
-N_runs = 9
+N_runs = 20
 # Two options for main execution:
 # 1. Serial run single CPU:
 # list_results = []
 # for i in range(N_runs):
 #     list_results.append(wrapper_call(i))
 #  2. Or rather parallel?
-list_results = Parallel(n_jobs=3)(delayed(wrapper_call)(i) for i in range(N_runs))
+list_results = Parallel(n_jobs=20)(delayed(wrapper_call)(i) for i in range(N_runs))
 
 
 # Make one dataframe with all results

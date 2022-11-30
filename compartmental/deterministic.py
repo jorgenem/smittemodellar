@@ -9,6 +9,7 @@ A simple deterministic SIR model
 By Jørgen Eriksson Midtbø, Folkehelseinstituttet, github.com/jorgenem
 """
 
+
 class SIR:
     """
     Solve the following system of differential equations:
