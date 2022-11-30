@@ -22,7 +22,7 @@ def wrapper_call(i):
     abm.reset_run() 
     # Run infectious disease model forward in time:
     t, incidence, I, S, R  = abm.run_abm(
-        beta = 1.4,
+        beta = 0.4,
         Tmax = 10
         )
     dt_results = {
@@ -36,14 +36,14 @@ def wrapper_call(i):
     return dt_results
 
 
-N_runs = 2
+N_runs = 9
 # Two options for main execution:
 # 1. Serial run single CPU:
 # list_results = []
 # for i in range(N_runs):
 #     list_results.append(wrapper_call(i))
 #  2. Or rather parallel?
-list_results = Parallel(n_jobs=2)(delayed(wrapper_call)(i) for i in range(N_runs))
+list_results = Parallel(n_jobs=3)(delayed(wrapper_call)(i) for i in range(N_runs))
 
 
 # Make one dataframe with all results
@@ -70,7 +70,10 @@ results_long['grouping'] = results_long['compartment'].astype(str) + "_" + resul
 
 # Plot using plotnine (ggplot2)
 from plotnine import *
-(ggplot(results_long)
+fig, plot = (ggplot(results_long)
 + aes(x='t', y='count', colour='compartment', group='grouping')
 + geom_line(alpha=0.7)
-)
+).draw(show=True, return_ggplot=True)
+ggsave(plot = plot, filename = "abm_ensemble.png", width=10, height=8, dpi=1000)
+# fig.tight_layout()
+# fig.savefig('abm_ensemble.png', dpi=300)
